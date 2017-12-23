@@ -1,7 +1,9 @@
 Role Name
 =========
 
-A brief description of the role goes here.
+ansible_mysql-ms-repli
+
+This role provides a Master/Salve Mysql replication
 
 Requirements
 ------------
