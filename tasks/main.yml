@@ -1,0 +1,44 @@
+---
+
+- name: Create MySQL User for Replication
+  mysql_user:
+    name: "{{ replica_user_name }}"
+    host: '%'
+    password: "{{ replica_user_password }}"
+    priv: '*.*:ALL,GRANT'
+    state: present
+
+
+- name: Register Master File and Position
+  mysql_replication:
+    mode: getmaster
+  register: master1_status
+  when: "'mysql-master' in group_names"
+
+- name: Set mysql-master Vars to mysql-slaves
+  set_fact: mysql-slaves_log="{{ hostvars[groups['databases'][0]]['master1_status'] }}"
+  when: "'mysql-slaves' in group_names"
+
+- name: Configure Master Replication on mysql-master
+  mysql_replication:
+    mode: changemaster
+    master_host: "{{ mysql-master }}"
+    master_user: "{{ replica_user_name }}"
+    master_password: "{{ replica_user_password }}"
+    master_log_file: "{{ mysql-slaves_log.File }}"
+    master_log_pos: "{{ mysql-slaves_log.Position }}"
+  with_dict: "{{ mysql-slaves_log }}"
+  when: "'mysql-slaves' in group_names"
+
+- name: Wait before Slave Init
+  pause:
+    seconds: 3
+
+- name: starting Replication on mysql-slaves
+  mysql_replication:
+    mode: startslave
+  when: "'mysql-slaves' in group_names"
+
+
+
+
