@@ -12,11 +12,11 @@
 - name: Register Master File and Position
   mysql_replication:
     mode: getmaster
-  register: master1_status
+  register: mysql-master_log
   when: "'mysql-master' in group_names"
 
 - name: Set mysql-master Vars to mysql-slaves
-  set_fact: mysql-slaves_log="{{ hostvars[groups['databases'][0]]['master1_status'] }}"
+  set_fact: mysql-slaves_log="{{ hostvars[groups['databases'][0]]['mysql-master_status'] }}"
   when: "'mysql-slaves' in group_names"
 
 - name: Configure Master Replication on mysql-master
